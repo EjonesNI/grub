@@ -1,0 +1,63 @@
+diff -purN libfdt.orig/fdt_rw.c libfdt/fdt_rw.c
+--- libfdt.orig/fdt_rw.c	2011-05-08 20:45:39.000000000 +0100
++++ libfdt/fdt_rw.c	2012-10-19 15:33:11.085523185 +0100
+@@ -88,9 +88,9 @@ static int _fdt_rw_check_header(void *fd
+ 
+ #define FDT_RW_CHECK_HEADER(fdt) \
+ 	{ \
+-		int err; \
+-		if ((err = _fdt_rw_check_header(fdt)) != 0) \
+-			return err; \
++		int macro_err; \
++		if ((macro_err = _fdt_rw_check_header(fdt)) != 0) \
++			return macro_err; \
+ 	}
+ 
+ static inline int _fdt_data_size(void *fdt)
+diff -purN libfdt.orig/libfdt_env.h libfdt/libfdt_env.h
+--- libfdt.orig/libfdt_env.h	2011-05-08 20:45:39.000000000 +0100
++++ libfdt/libfdt_env.h	2012-10-19 16:13:19.051344173 +0100
+@@ -4,9 +4,27 @@
+ #ifndef _LIBFDT_ENV_H
+ #define _LIBFDT_ENV_H
+ 
++#ifndef GRUB_MACHINE
++/* Used when building for an ANSI C platform */
+ #include <stddef.h>
+ #include <stdint.h>
+ #include <string.h>
++#else
++/* Achieving the came for GRUB */
++#include <grub/misc.h>
++#include <grub/mm.h>
++#include <grub/types.h>
++typedef grub_size_t size_t;
++typedef grub_uint8_t uint8_t;
++typedef grub_uint32_t uint32_t;
++typedef grub_uint64_t uint64_t;
++typedef grub_addr_t uintptr_t;
++#define memchr grub_memchr
++#define strlen grub_strlen
++#define strchr grub_strchr
++#pragma GCC diagnostic ignored "-Wcast-align"
++#pragma GCC diagnostic ignored "-Wsign-compare"
++#endif
+ 
+ #define _B(n)	((unsigned long long)((uint8_t *)&x)[n])
+ static inline uint32_t fdt32_to_cpu(uint32_t x)
+diff -purN libfdt.orig/libfdt_internal.h libfdt/libfdt_internal.h
+--- libfdt.orig/libfdt_internal.h	2011-05-08 20:45:39.000000000 +0100
++++ libfdt/libfdt_internal.h	2012-10-19 15:33:11.105524731 +0100
+@@ -60,9 +60,9 @@
+ 
+ #define FDT_CHECK_HEADER(fdt) \
+ 	{ \
+-		int err; \
+-		if ((err = fdt_check_header(fdt)) != 0) \
+-			return err; \
++		int macro_err; \
++		if ((macro_err = fdt_check_header(fdt)) != 0) \
++			return macro_err; \
+ 	}
+ 
+ int _fdt_check_node_offset(const void *fdt, int offset);
